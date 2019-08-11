@@ -9,6 +9,9 @@ package com.nepxion.discovery.gray.zuul.impl;
  * @version 1.0
  */
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,7 @@ import com.nepxion.discovery.common.constant.DiscoveryConstant;
 import com.nepxion.discovery.plugin.strategy.zuul.tracer.DefaultZuulStrategyTracer;
 import com.netflix.zuul.context.RequestContext;
 
+// 自定义调用链和灰度调用链通过MDC输出到日志。使用者集成时候，关注trace方法中的MDC.put和release方法中MDC.clear代码部分即可
 public class MyZuulStrategyTracer extends DefaultZuulStrategyTracer {
     private static final Logger LOG = LoggerFactory.getLogger(MyZuulStrategyTracer.class);
 
@@ -24,7 +28,12 @@ public class MyZuulStrategyTracer extends DefaultZuulStrategyTracer {
     public void trace(RequestContext context) {
         super.trace(context);
 
-        // 输出到日志
+        // 自定义调用链
+        MDC.put("traceid", "traceid=" + strategyContextHolder.getHeader("traceid"));
+        MDC.put("spanid", "spanid=" + strategyContextHolder.getHeader("spanid"));
+        MDC.put("mobile", "mobile=" + strategyContextHolder.getHeader("mobile"));
+
+        // 灰度路由调用链
         MDC.put(DiscoveryConstant.N_D_SERVICE_GROUP, "服务组名=" + strategyContextHolder.getHeader(DiscoveryConstant.N_D_SERVICE_GROUP));
         MDC.put(DiscoveryConstant.N_D_SERVICE_TYPE, "服务类型=" + strategyContextHolder.getHeader(DiscoveryConstant.N_D_SERVICE_TYPE));
         MDC.put(DiscoveryConstant.N_D_SERVICE_ID, "服务名=" + strategyContextHolder.getHeader(DiscoveryConstant.N_D_SERVICE_ID));
@@ -35,7 +44,6 @@ public class MyZuulStrategyTracer extends DefaultZuulStrategyTracer {
         LOG.info("全链路灰度调用链输出");
 
         LOG.info("request={}", context.getRequest());
-        LOG.info("mobile={}", strategyContextHolder.getHeader("mobile"));
     }
 
     @Override
@@ -43,5 +51,16 @@ public class MyZuulStrategyTracer extends DefaultZuulStrategyTracer {
         MDC.clear();
 
         LOG.info("全链路灰度调用链清除");
+    }
+
+    // Debug用
+    @Override
+    public Map<String, String> getDebugTraceMap() {
+        Map<String, String> debugTraceMap = new LinkedHashMap<String, String>();
+        debugTraceMap.put("traceid", strategyContextHolder.getHeader("traceid"));
+        debugTraceMap.put("spanid", strategyContextHolder.getHeader("spanid"));
+        debugTraceMap.put("mobile", strategyContextHolder.getHeader("mobile"));
+
+        return debugTraceMap;
     }
 }
