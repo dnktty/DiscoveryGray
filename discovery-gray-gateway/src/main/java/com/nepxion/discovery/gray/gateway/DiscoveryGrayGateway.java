@@ -31,10 +31,10 @@ public class DiscoveryGrayGateway {
         new SpringApplicationBuilder(DiscoveryGrayGateway.class).run(args);
     }
 
-    @Bean
-    public DiscoveryEnabledStrategy discoveryEnabledStrategy() {
-        return new MyDiscoveryEnabledStrategy();
-    }
+//    @Bean
+//    public DiscoveryEnabledStrategy discoveryEnabledStrategy() {
+//        return new MyDiscoveryEnabledStrategy();
+//    }
 
     @Bean
     @ConditionalOnProperty(value = GatewayStrategyConstant.SPRING_APPLICATION_STRATEGY_GATEWAY_ROUTE_FILTER_ENABLED, matchIfMissing = true)
